@@ -65,20 +65,20 @@ body{justify-content:flex-start;padding:8px 5px;background:#0a0a0a}
 .status{font-size:0.45rem;margin:5px 0}
 .left-panel{display:flex;flex-direction:column;align-items:center;width:45px;flex-shrink:0;justify-content:space-between;padding:10px 4px}
 .center-panel{display:flex;flex-direction:column;align-items:center;flex-grow:1;justify-content:center;padding:5px}
-.right-panel{display:flex;flex-direction:column;align-items:center;width:50px;flex-shrink:0;justify-content:space-between;padding:10px 4px}
+.right-panel{display:flex;flex-direction:column;align-items:center;width:55px;flex-shrink:0;justify-content:space-between;padding:10px 4px}
 .controls{display:flex;flex-direction:column;gap:6px;align-items:center}
 .power-m{margin:5px 0}
 .power-bar{width:35px;height:14px;border-radius:7px}
 .power-fill{height:100%;width:0%}
 .power-l{font-size:0.35rem;margin:2px 0}
-.stick-a{width:45px;height:45px}
-.stick-r{width:45px;height:45px;border-width:3px}
-.stick-k{width:18px;height:18px;border-width:2px}
+.stick-a{width:55px;height:55px}
+.stick-r{width:55px;height:55px;border-width:3px}
+.stick-k{width:22px;height:22px;border-width:2px}
 .btns{gap:3px;margin-top:5px}
 .btn{padding:5px 6px;font-size:0.5rem;border-radius:4px}
 #powerBtn{display:inline-block;background:#2a2a3e;border:2px solid #5a5a7a;border-radius:5px;padding:6px 8px;color:#fff;cursor:pointer;font-size:0.55rem;margin:5px 0}
 #btnPause,#btnReset,#btnMenu{display:inline-block;padding:5px;font-size:0.5rem}
-#stickArea{display:inline-block}
+#stickArea{display:inline-block;touch-action:none}
 .bonus{font-size:12px;padding:6px 12px}
 #hitPopup,#hypePopup{font-size:12px;padding:6px 10px}
 }</style>
@@ -403,8 +403,11 @@ ctx.stroke();
 }
 
 function knob(a){
-var kx=Math.cos(a)*42,ky=Math.sin(a)*42;
-document.getElementById("stickKnob").style.transform="translate("+(kx-24)+"px,"+(ky-24)+"px)";
+var isMobile=window.innerWidth<900;
+var max=isMobile?18:42;
+var offset=isMobile?11:24;
+var kx=Math.cos(a)*max,ky=Math.sin(a)*max;
+document.getElementById("stickKnob").style.transform="translate("+(kx-offset)+"px,"+(ky-offset)+"px)";
 }
 
 function gameLoop(){
@@ -469,11 +472,25 @@ requestAnimationFrame(gameLoop);
 window.onload=function(){
 canvas=document.getElementById("gameCanvas");
 ctx=canvas.getContext("2d");
-document.getElementById("stickArea").onmousemove=function(e){
+var stickArea=document.getElementById("stickArea");
+stickArea.onmousemove=function(e){
 if(!balls||!allStopped()||waitingNext)return;
-var r=this.getBoundingClientRect(),mx=e.clientX-r.left-65,my=e.clientY-r.top-65;
+var r=this.getBoundingClientRect(),mx=e.clientX-r.left-27,my=e.clientY-r.top-27;
 if(Math.sqrt(mx*mx+my*my)>3){aimAngle=Math.atan2(my,mx);knob(aimAngle);showDir=true;}
 };
+stickArea.ontouchstart=function(e){
+e.preventDefault();
+if(!balls||!allStopped()||waitingNext)return;
+var t=e.touches[0],r=this.getBoundingClientRect(),mx=t.clientX-r.left-27,my=t.clientY-r.top-27;
+if(Math.sqrt(mx*mx+my*my)>3){aimAngle=Math.atan2(my,mx);knob(aimAngle);showDir=true;}
+};
+stickArea.ontouchmove=function(e){
+e.preventDefault();
+if(!balls||!allStopped()||waitingNext)return;
+var t=e.touches[0],r=this.getBoundingClientRect(),mx=t.clientX-r.left-27,my=t.clientY-r.top-27;
+if(Math.sqrt(mx*mx+my*my)>3){aimAngle=Math.atan2(my,mx);knob(aimAngle);showDir=true;}
+};
+stickArea.ontouchend=function(e){e.preventDefault();};
 document.getElementById("btnPause").onclick=function(){
 if(trainingMode)return;
 paused=!paused;
